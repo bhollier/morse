@@ -39,7 +39,7 @@ func randomRune(r *rand.Rand) rune {
 }
 
 func generateRandomWord(r *rand.Rand) string {
-	wordsWithRunes := words.WithRunes([]rune(*characters))
+	wordsWithRunes := words.WithOnlyRunes([]rune(*characters))
 	// Filter out words that are too long
 	i := 0
 	for _, word := range wordsWithRunes {

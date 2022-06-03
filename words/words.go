@@ -35,7 +35,8 @@ func init() {
 	}
 }
 
-func WithRunes(rs []rune) (words []string) {
+// WithAnyRunes returns all words containing any of the given runes
+func WithAnyRunes(rs []rune) (words []string) {
 	wordSet := make(map[string]struct{})
 	for _, r := range rs {
 		for _, word := range wordsWithRuneMap[r] {
@@ -47,4 +48,28 @@ func WithRunes(rs []rune) (words []string) {
 		words = append(words, word)
 	}
 	return
+}
+
+// WithOnlyRunes returns all the words that are made up of only the given runes
+func WithOnlyRunes(rs []rune) []string {
+	rSet := make(map[rune]struct{}, len(rs))
+	for _, r := range rs {
+		rSet[r] = struct{}{}
+	}
+
+	matchingWords := make([]string, 0)
+	for _, word := range words {
+		hasAllRunes := true
+		for _, wr := range []rune(word) {
+			_, ok := rSet[wr]
+			if !ok {
+				hasAllRunes = false
+				break
+			}
+		}
+		if hasAllRunes {
+			matchingWords = append(matchingWords, word)
+		}
+	}
+	return matchingWords
 }
