@@ -1,54 +1,51 @@
 package morse
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
 
-// Signal represents a single (possible audible) Morse signal,
-// e.g. a dit, dah, single space, word space, etc.
-type Signal struct {
-	audible  bool
-	duration uint
-	str      string
-}
-
-// Audible returns whether the signal is audible,
-// aka whether it is a beep or silent
-func (s Signal) Audible() bool {
-	return s.audible
-}
-
-// Duration returns the duration of the signal, at the given WPM.
-// The standard word for the WPM is "PARIS".
-//
-// If farnsworthWPM is non-zero, the duration is based on Farnsworth timing,
-// see Code.Duration for more info
-func (s Signal) Duration(wpm, farnsworthWPM uint) time.Duration {
-	if farnsworthWPM > wpm {
-		panic(fmt.Errorf("farnswordWPM (%d) > wpm (%d)", farnsworthWPM, wpm))
-	}
-
-	ditDuration := time.Minute / time.Duration(standardWordDuration*wpm)
-	if farnsworthWPM == 0 || (s != RuneSpace && s != WordSpace) {
-		return time.Duration(s.duration) * ditDuration
-	} else {
-		standardWordRuneDitDuration := standardWordDuration - standardWordFarnsworthDuration
-		farnsworthDitDuration := ((time.Minute / time.Duration(farnsworthWPM)) -
-			(time.Duration(standardWordRuneDitDuration) * ditDuration)) /
-			time.Duration(standardWordFarnsworthDuration)
-		return time.Duration(s.duration) * farnsworthDitDuration
-	}
-}
-
-// String returns the signal's string representation, e.g. '・', '－', ' '
-func (s Signal) String() string {
-	return s.str
-}
-
 // Code is a sequence of Morse signals
 type Code []Signal
+
+// Join concatenates the given slice of Code, using the given delimiter.
+// Similar to strings.Join
+func Join(elems []Code, sep Code) (code Code) {
+	switch len(elems) {
+	case 0:
+		return Code{}
+	case 1:
+		return elems[0]
+	}
+	n := len(sep) * (len(elems) - 1)
+	for i := 0; i < len(elems); i++ {
+		n += len(elems[i])
+	}
+
+	code = make(Code, 0, n)
+	code = append(code, elems[0]...)
+	for _, c := range elems[1:] {
+		code = append(code, sep...)
+		code = append(code, c...)
+	}
+	return
+}
+
+// JoinNoSpace joins the given codes without any spaces between code sequences.
+// Useful for creating prosigns
+func JoinNoSpace(elems ...Code) Code {
+	return Join(elems, nil)
+}
+
+// JoinLetters joins the given codes with a RuneSpace between the code sequences
+func JoinLetters(letters ...Code) Code {
+	return Join(letters, Code{RuneSpace})
+}
+
+// JoinWords joins the given codes with a WordSpace between the code sequences
+func JoinWords(words ...Code) Code {
+	return Join(words, Code{WordSpace})
+}
 
 func (c Code) Equal(o Code) bool {
 	if len(c) != len(o) {
