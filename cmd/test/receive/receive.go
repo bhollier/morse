@@ -15,35 +15,42 @@ import (
 	"time"
 )
 
-var flagSet = flag.NewFlagSet("receive", flag.ExitOnError)
+type subCmd struct {
+	*flag.FlagSet
+}
 
-var sampleRate = flagSet.Int("sampleRate", 44100, "The speaker sample rate")
-var freq = flagSet.Int("freq", 800, "The tone frequency")
-var wpm = flagSet.Uint("wpm", 20, "The words per minute (standard word PARIS)")
-var farnsworthWPM = flagSet.Uint("fwpm", 15, "The farnsworth words per minute. "+
+var SubCmd = subCmd{
+	FlagSet: flag.NewFlagSet("receive", flag.ExitOnError),
+}
+
+var sampleRate = SubCmd.Int("sampleRate", 44100, "The speaker sample rate")
+var freq = SubCmd.Int("freq", 800, "The tone frequency")
+var wpm = SubCmd.Uint("wpm", 20, "The words per minute (standard word PARIS)")
+var farnsworthWPM = SubCmd.Uint("fwpm", 15, "The farnsworth words per minute. "+
 	"Only applicable if group is equal to '[w]ords' or '[s]entences")
 
-var groupingStr = flagSet.String("group", "", "Required. How many morse code signals to send for each test, "+
+var groupingStr = SubCmd.String("group", "", "Required. How many morse code signals to send for each test, "+
 	"either individual [c]haraters, [w]ords or [s]entences")
-var characters = flagSet.String("characters", "abcdefghijklmnopqrstuvwxyz", "The characters to use as input in tests")
-var maxWordLength = flagSet.Uint("maxWord", 4, "The maximum length of a word. "+
+var characters = SubCmd.String("characters", "abcdefghijklmnopqrstuvwxyz", "The characters to use as input in tests")
+var maxWordLength = SubCmd.Uint("maxWord", 4, "The maximum length of a word. "+
 	"Only applicable if group is equal to '[w]ords' or '[s]entences'")
-var minSentenceLength = flagSet.Uint("minSentence", 2, "The minimum words in a sentence. "+
+var minSentenceLength = SubCmd.Uint("minSentence", 2, "The minimum words in a sentence. "+
 	"Only applicable if group is equal to '[s]entences'")
-var maxSentenceLength = flagSet.Uint("maxSentence", 6, "The maximum words in a sentence. "+
+var maxSentenceLength = SubCmd.Uint("maxSentence", 6, "The maximum words in a sentence. "+
 	"Only applicable if group is equal to '[s]entences'")
 
-func Main(args []string) {
+func (s subCmd) Run(args []string) {
 	randSrc := rand.NewSource(time.Now().UnixNano())
+	s.Name()
 	r := rand.New(randSrc)
 
-	_ = flagSet.Parse(args)
+	_ = s.Parse(args)
 
 	sr := beep.SampleRate(*sampleRate)
 
 	grouping, err := ParseGrouping(*groupingStr)
 	if err != nil {
-		fmt.Fprintln(flag.CommandLine.Output(), err.Error())
+		fmt.Fprintln(s.Output(), err.Error())
 		os.Exit(2)
 	}
 
@@ -52,7 +59,7 @@ func Main(args []string) {
 
 	streamer, err := play.MorseStreamer(sr, *freq, *wpm, *farnsworthWPM, morseReader)
 	if err != nil {
-		fmt.Fprintln(flag.CommandLine.Output(), err.Error())
+		fmt.Fprintln(s.Output(), err.Error())
 		os.Exit(2)
 	}
 
