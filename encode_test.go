@@ -2,6 +2,7 @@ package morse
 
 import (
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/loremipsum.v1"
 	"io"
 	"strings"
 	"testing"
@@ -37,4 +38,40 @@ func TestFromText(t *testing.T) {
 	n, err := r.Read(buf)
 	a.Equal(0, n)
 	a.Equal(io.EOF, err)
+}
+
+const benchmarkTextEncoderSeed = 42
+const benchmarkTextEncoderBufferSize = 512
+
+func benchmarkTextEncoder(b *testing.B, paragraphs int) {
+	loremIpsumGenerator := loremipsum.NewWithSeed(benchmarkTextEncoderSeed)
+	text := loremIpsumGenerator.Paragraphs(paragraphs)
+
+	benchmarkReader(b, benchmarkTextEncoderBufferSize, func() Reader {
+		return ReaderFromText(strings.NewReader(text))
+	})
+}
+
+func BenchmarkTextEncoder1(b *testing.B) {
+	benchmarkTextEncoder(b, 1)
+}
+
+func BenchmarkTextEncoder2(b *testing.B) {
+	benchmarkTextEncoder(b, 2)
+}
+
+func BenchmarkTextEncoder3(b *testing.B) {
+	benchmarkTextEncoder(b, 3)
+}
+
+func BenchmarkTextEncoder4(b *testing.B) {
+	benchmarkTextEncoder(b, 4)
+}
+
+func BenchmarkTextEncoder5(b *testing.B) {
+	benchmarkTextEncoder(b, 5)
+}
+
+func BenchmarkTextEncoder10(b *testing.B) {
+	benchmarkTextEncoder(b, 10)
 }
