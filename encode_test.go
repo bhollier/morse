@@ -47,7 +47,7 @@ func benchmarkTextEncoder(b *testing.B, paragraphs int) {
 	loremIpsumGenerator := loremipsum.NewWithSeed(benchmarkTextEncoderSeed)
 	text := loremIpsumGenerator.Paragraphs(paragraphs)
 
-	benchmarkReader(b, benchmarkTextEncoderBufferSize, func() Reader {
+	benchmarkReader(b, benchmarkTextEncoderBufferSize, func() genericReader[Signal] {
 		return ReaderFromText(strings.NewReader(text))
 	})
 }

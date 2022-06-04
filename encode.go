@@ -36,7 +36,11 @@ func (e *TextEncoder) Read(p []Signal) (n int, err error) {
 	// While there is space in p and there are words to encode
 	for len(p) > 0 {
 		if !e.wordScanner.Scan() {
-			return n, io.EOF
+			err = e.wordScanner.Err()
+			if err == nil {
+				err = io.EOF
+			}
+			return
 		}
 
 		// Read a word

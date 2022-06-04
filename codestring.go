@@ -46,7 +46,11 @@ func (r *CodeStringReader) Read(p []Signal) (n int, err error) {
 	// While there is space in p and there is code to read
 	for len(p) > 0 {
 		if !r.codeScanner.Scan() {
-			return n, io.EOF
+			err = r.codeScanner.Err()
+			if err == nil {
+				err = io.EOF
+			}
+			return
 		}
 
 		wordStarted := r.wordStarted

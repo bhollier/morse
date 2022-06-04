@@ -72,7 +72,7 @@ func benchmarkCodeStringReader(b *testing.B, paragraphs int) {
 	// Convert the text into morse code
 	codeString := FromText(text).String()
 
-	benchmarkReader(b, benchmarkCodeStringReaderBufferSize, func() Reader {
+	benchmarkReader(b, benchmarkCodeStringReaderBufferSize, func() genericReader[Signal] {
 		return ReaderFromCodeString(strings.NewReader(codeString))
 	})
 }
