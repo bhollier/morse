@@ -1,3 +1,4 @@
+// Package play contains methods for playing Morse Code audio
 package play
 
 import (

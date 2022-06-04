@@ -1,3 +1,5 @@
+// Package prosign contains definitions for common Morse prosigns.
+// Importing the package automatically adds some prosigns to morse.Dictionary
 package prosign
 
 import "github.com/bhollier/morse"

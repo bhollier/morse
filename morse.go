@@ -1,3 +1,5 @@
+// Package morse contains definitions for representing morse code programmatically,
+// as well as some general readers and writers similar to io.Reader/io.Writer
 package morse
 
 import (
