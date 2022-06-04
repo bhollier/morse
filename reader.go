@@ -5,31 +5,41 @@ import (
 )
 
 // Reader is an interface for reading Morse signals.
-// Functions the same as an io.Reader, but for reading Signal
+// While it generally functions the same as an io.Reader,
+// prefer using this where possible
 type Reader interface {
 	Read(p []Signal) (n int, err error)
 }
 
-// ReadAll reads from r until an error or io.EOF and returns the data it read.
-// A successful call returns err == nil, not err == io.EOF. Because ReadAll is
-// defined to read from src until io.EOF, it does not treat an io.EOF from Read
-// as an error to be reported.
+// ToByteReader is a simple wrapper around a Reader,
+// so it acts like an io.Reader. This works because
+// Signal is a byte under the hood. Beware when using
+// this, as it can be confusing to treat a Signal as a byte
+type ToByteReader struct {
+	Reader
+}
+
+func (r ToByteReader) Read(p []byte) (n int, err error) {
+	return r.Reader.Read(byteArrayToSignalArray(p))
+}
+
+// FromByteReader is a simple wrapper around an io.Reader,
+// so it acts like a Reader. This works because Signal is
+// a byte under the hood. Beware when using this, as it
+// can be confusing to treat a Signal as a byte
+type FromByteReader struct {
+	io.Reader
+}
+
+func (r FromByteReader) Read(p []Signal) (n int, err error) {
+	return r.Reader.Read(signalArrayToByteArray(p))
+}
+
+// ReadAll is the Signal equivalent of io.ReadAll
 func ReadAll(r Reader) ([]Signal, error) {
-	b := make([]Signal, 0, 512)
-	for {
-		if len(b) == cap(b) {
-			// Add more capacity (let append pick how much).
-			b = append(b, Signal{})[:len(b)]
-		}
-		n, err := r.Read(b[len(b):cap(b)])
-		b = b[:len(b)+n]
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-			}
-			return b, err
-		}
-	}
+	// Use io.ReadAll and ToByteReader since Signals are bytes
+	bytes, err := io.ReadAll(ToByteReader{r})
+	return byteArrayToSignalArray(bytes), err
 }
 
 // CodeReader is a reader for Code slice
