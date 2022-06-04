@@ -11,7 +11,7 @@ var (
 	ThisIsFrom = morse.JoinLetters(morse.D, morse.E)
 
 	// UnknownStation Used for directional signaling lights, but not in radiotelegraphy.
-	UnknownStation = morse.JoinNoSpace(morse.A, morse.A)
+	UnknownStation = morse.JoinSignals(morse.A, morse.A)
 
 	// NothingHeard General-purpose response to any request or inquiry for which the answer is "nothing" or "none" or
 	// "not available" (Morse abbr.). Also means "I have no messages for you."
@@ -25,7 +25,7 @@ var (
 	Over = morse.K
 
 	// Out End of transmission / End of message / End of telegram. (Same as EC "end copy", and character +.)
-	Out = morse.JoinNoSpace(morse.A, morse.R)
+	Out = morse.JoinSignals(morse.A, morse.R)
 
 	// Closing Announcing station shutdown (Morse abbr.).
 	Closing = morse.JoinLetters(morse.C, morse.L)
@@ -41,13 +41,13 @@ var (
 
 	// Wait "I must pause for a few minutes." Also means
 	// "I am engaged in a contact with another station [that you may not hear]; please wait quietly."
-	Wait = morse.JoinNoSpace(morse.A, morse.S)
+	Wait = morse.JoinSignals(morse.A, morse.S)
 
 	// WaitOut I must pause for more than a few minutes.
 	WaitOut = morse.JoinLetters(Wait, Out)
 
 	// Verified Message is verified.
-	Verified = morse.JoinNoSpace(morse.V, morse.E)
+	Verified = morse.JoinSignals(morse.V, morse.E)
 
 	// WordAfter (Morse abbr.)
 	WordAfter = morse.JoinLetters(morse.W, morse.A)
@@ -66,14 +66,14 @@ var (
 
 	// SayAgain When standing alone, a note of interrogation or request for repetition of a transmission not understood.
 	// When ? is placed after a coded signal, modifies the code to be a question or request.
-	SayAgain = morse.JoinNoSpace(morse.U, morse.D)
+	SayAgain = morse.JoinSignals(morse.U, morse.D)
 
 	// Interrogative Military replacement for the ? prosign; equivalent to Spanish ¿ punctuation mark. When placed
 	// before a signal, modifies the signal to be a question/request.
-	Interrogative = morse.JoinNoSpace(morse.I, morse.N, morse.T)
+	Interrogative = morse.JoinSignals(morse.I, morse.N, morse.T)
 
 	// Correction Preceding text was in error. The following is the corrected text.
-	Correction = morse.JoinNoSpace(morse.H, morse.H)
+	Correction = morse.JoinSignals(morse.H, morse.H)
 
 	// Correct Answer to prior question is "yes". (Morse abbr.)
 	Correct = morse.C
@@ -94,13 +94,13 @@ var (
 	RequestTimeCheck = morse.JoinLetters(TimeIs, morse.QuestionMark)
 
 	// Break Start new section of message.
-	Break = morse.JoinNoSpace(morse.B, morse.T)
+	Break = morse.JoinSignals(morse.B, morse.T)
 
 	// BreakIn Signal used to interrupt a transmission already in progress (Morse abbr.)
 	BreakIn = morse.JoinLetters(morse.B, morse.K)
 
 	// Attention Message begins / Start of work / New message
-	Attention = morse.JoinNoSpace(morse.K, morse.A)
+	Attention = morse.JoinSignals(morse.K, morse.A)
 
 	// Acknowledge Message received (Morse abbr.).
 	Acknowledge = morse.JoinLetters(morse.C, morse.F, morse.M)
@@ -112,7 +112,7 @@ var (
 // The following are prosigns in the dictionary:
 
 var (
-	Newline = morse.JoinNoSpace(morse.A, morse.A)
+	Newline = morse.JoinSignals(morse.A, morse.A)
 )
 
 // todo add more

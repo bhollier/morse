@@ -33,10 +33,10 @@ func Join(elems []Code, sep Code) (code Code) {
 	return
 }
 
-// JoinNoSpace joins the given codes without any spaces between code sequences.
+// JoinSignals joins the given codes with a SignalSpace between code sequences.
 // Useful for creating prosigns
-func JoinNoSpace(elems ...Code) Code {
-	return Join(elems, nil)
+func JoinSignals(elems ...Code) Code {
+	return Join(elems, Code{SignalSpace})
 }
 
 // JoinLetters joins the given codes with a RuneSpace between the code sequences
