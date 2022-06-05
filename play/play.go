@@ -52,7 +52,7 @@ func (s *streamer) Stream(samples [][2]float64) (n int, ok bool) {
 
 	signals := make([]morse.Signal, signalBufferSize)
 
-	// While there is space in p and there are morse signals to stream
+	// While there is space in p and we haven't hit an error yet
 	for len(samples) > 0 && s.err == nil {
 		signalsRead, err := s.morseReader.Read(signals)
 		if err != nil {
@@ -86,7 +86,7 @@ func (s *streamer) Stream(samples [][2]float64) (n int, ok bool) {
 			// (this can happen e.g. if the morse reader is a
 			// NonBlockingChannelReader)
 		} else if s.err == nil {
-			// Fade out and the rest of the signals can be silent
+			// Fade out and the rest of the samples can be silent
 			s.fadeStreamer.FadeOutFor(fadeDuration)
 			samplesCopied, ok := s.fadeStreamer.Stream(samples)
 			if !ok {
