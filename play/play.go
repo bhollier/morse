@@ -46,10 +46,6 @@ func MorseStreamer(sr beep.SampleRate, freq int, wpm, farnsworthWPM uint, r mors
 }
 
 func (s *streamer) Stream(samples [][2]float64) (n int, ok bool) {
-	if s.err != nil {
-		return 0, false
-	}
-
 	// First, try to empty the overflow from the last read
 	n = s.overflow.Empty(samples)
 	samples = samples[n:]
@@ -86,14 +82,35 @@ func (s *streamer) Stream(samples [][2]float64) (n int, ok bool) {
 				n += samplesCopied
 			}
 
-			// Otherwise the rest of the samples are silent
+			// If we got no signals, but there's no error
+			// (this can happen e.g. if the morse reader is a
+			// NonBlockingChannelReader)
 		} else if s.err == nil {
+			// Fade out and the rest of the signals can be silent
 			s.fadeStreamer.FadeOutFor(fadeDuration)
 			samplesCopied, ok := s.fadeStreamer.Stream(samples)
 			if !ok {
 				s.err = s.fadeStreamer.Err()
 			}
 
+			samples = samples[samplesCopied:]
+			n += samplesCopied
+
+			// If we reached EOF, we still want to add a fade,
+			// otherwise the signal cuts off very messily
+		} else if s.err == io.EOF {
+			// Create enough samples for a final rune space
+			numSamples := s.sampleRate.N(morse.RuneSpace.Duration(s.wpm, s.farnsworthWPM))
+			fadeSamples := make([][2]float64, numSamples)
+			s.fadeStreamer.FadeOutFor(fadeDuration)
+
+			_, ok := s.fadeStreamer.Stream(fadeSamples)
+			if !ok {
+				s.err = s.fadeStreamer.Err()
+			}
+
+			// Copy the fade samples into samples (with the remaining going into the buffer)
+			samplesCopied := s.overflow.Copy(samples, fadeSamples)
 			samples = samples[samplesCopied:]
 			n += samplesCopied
 		}
