@@ -62,7 +62,7 @@ func (c Code) Equal(o Code) bool {
 }
 
 // DitDuration returns the duration of the code, relative to a Dit.
-// See Signal.Duration for more info
+// See Signal.DitDuration for more info
 func (c Code) DitDuration() (d uint) {
 	for _, s := range c {
 		d += s.DitDuration()
