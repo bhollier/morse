@@ -37,7 +37,11 @@ func main() {
 	}
 
 	signalChannel := make(chan morse.Signal)
+	morseWriter := morse.WriterFromChan(signalChannel, true)
 	morseReader := morse.ReaderFromChan(signalChannel, false)
+	if *printMorse {
+		morseReader = morse.PrintWrapReader(morseReader)
+	}
 
 	streamer, err := play.MorseStreamer(sr, *freq, *wpm, *farnsworthWPM, morseReader)
 	if err != nil {
@@ -59,7 +63,10 @@ func main() {
 	// Output the initial input from the program arguments
 	{
 		input := strings.Join(flag.Args(), " ")
-		SendSignals(signalChannel, inputMode.ConvertInput(input))
+		_, err = morseWriter.Write(inputMode.ConvertInput(input))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// Output input from the user if in interactive mode
@@ -68,7 +75,7 @@ func main() {
 		inputScanner := bufio.NewScanner(os.Stdin)
 		for inputScanner.Scan() {
 			input := inputScanner.Text()
-			SendSignals(signalChannel, inputMode.ConvertInput(input))
+			_, _ = morseWriter.Write(inputMode.ConvertInput(input))
 		}
 		if inputScanner.Err() != io.EOF {
 			panic(inputScanner.Err())
