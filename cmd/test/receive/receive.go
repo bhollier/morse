@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/bhollier/morse"
 	"github.com/bhollier/morse/play"
+	"github.com/bhollier/morse/prosign"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"io"
@@ -81,23 +82,57 @@ func (s subCmd) Run(args []string) {
 		// Generate a random string
 		randString := strings.ToLower(grouping.GenerateString(r))
 		randCode := morse.FromText(randString)
+		// Prepend the attention prosign to indicate the start of the message
+		randCode = morse.JoinWords(prosign.Attention, randCode)
 
 		// Keep asking for input until the user gives something
+		ok := true
 		var input string
-		for input == "" {
+		for ok && input == "" {
+			cancel := make(chan bool, 1)
+			finished := make(chan bool)
+			// Write the morse code in another go routine
+			// so the user can write their input as it plays
 			go func() {
-				for _, s := range randCode {
-					// todo cancel if input is received or if repeat is requested
-					signalChannel <- s
+				i := 0
+				for i < len(randCode) {
+					// Can only cancel on a space
+					if !randCode[i].Audible() {
+						select {
+						// If the user wants to cancel
+						case <-cancel:
+							// Send a rune space
+							signalChannel <- morse.RuneSpace
+							// Exit the loop early
+							break
+
+							// Otherwise just try to write to the signal channel
+						case signalChannel <- randCode[i]:
+							i++
+						}
+
+						// Otherwise just write like normal
+					} else {
+						signalChannel <- randCode[i]
+						i++
+					}
 				}
+				// Let the main thread know we're finished,
+				// so it can (possibly) replay the code
+				finished <- true
 			}()
 
-			if !inputScanner.Scan() {
-				break
+			ok = inputScanner.Scan()
+			// The user has given their input, cancel playing the morse code
+			// (if it hasn't finished already)
+			cancel <- true
+			// Wait for the go routine to finish writing at an appropriate spot
+			<-finished
+			if ok {
+				input = strings.ToLower(inputScanner.Text())
 			}
-			input = strings.ToLower(inputScanner.Text())
 		}
-		if input == "" || inputScanner.Err() != nil {
+		if !ok || inputScanner.Err() != nil {
 			break
 		}
 
