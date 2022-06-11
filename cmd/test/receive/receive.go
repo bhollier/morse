@@ -40,6 +40,9 @@ var minSentenceLength = SubCmd.Uint("minSentence", 2, "The minimum words in a se
 var maxSentenceLength = SubCmd.Uint("maxSentence", 6, "The maximum words in a sentence. "+
 	"Only applicable if group is equal to '[s]entences'")
 
+var attention = SubCmd.Bool("attention", false,
+	"Whether to send the 'attention' prosign (－・－・－) before each test code")
+
 func (s subCmd) Run(args []string) {
 	randSrc := rand.NewSource(time.Now().UnixNano())
 	s.Name()
@@ -82,8 +85,10 @@ func (s subCmd) Run(args []string) {
 		// Generate a random string
 		randString := strings.ToLower(grouping.GenerateString(r))
 		randCode := morse.FromText(randString)
-		// Prepend the attention prosign to indicate the start of the message
-		randCode = morse.JoinWords(prosign.Attention, randCode)
+		if *attention {
+			// Prepend the attention prosign to indicate the start of the message
+			randCode = morse.JoinWords(prosign.Attention, randCode)
+		}
 
 		// Keep asking for input until the user gives something
 		ok := true
